@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+
+
+.blur-background {
+  filter: blur(8px);
+  transition: filter 0.3s ease-in-out;
+}
+
+

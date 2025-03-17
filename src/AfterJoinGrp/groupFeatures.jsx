@@ -2,17 +2,32 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import screen from "../assets/screenshare.png";
 import endcall from "../assets/endcall.png";
+import participations from "../assets/participateSVg.svg";
+import { useDispatch, useSelector } from 'react-redux';
+import {toggle} from "../Features/counter/toggleConnectUsers"
 
 const GroupFeatures = () => {
+  const dispatch = useDispatch();
+
+  const isParticipationsActive = useSelector((state) => state.connectedUsers.isToggled);
+  console.log("participation",isParticipationsActive)
+
   const [clickedIcons, setClickedIcons] = useState({
     mic: true,
     polygon: true,
     screen: false,
+    participations:false,
+
   });
 
   const [isVisible, setIsVisible] = useState(true); // State to manage visibility
 
   const handleIconClick = (icon) => {
+
+  if(icon === "participations")
+  {
+    dispatch(toggle())
+  }
     setClickedIcons((prevState) => ({
       ...prevState,
       [icon]: !prevState[icon], // Toggle independently
@@ -51,7 +66,7 @@ const GroupFeatures = () => {
             </svg>
           </div>
 
-          {/* Polygon/Rect SVG */}
+        {/* Video call Icons  */}
           <div
             className={`icon-container ${clickedIcons.polygon ? 'clicked' : ''}`}
             onClick={() => handleIconClick('polygon')}
@@ -77,6 +92,11 @@ const GroupFeatures = () => {
               />
             </svg>
           </div>
+           {/* Participations */}
+          <div className={`icon-container screen-icon ${clickedIcons.participations ? 'clicked' : ''}`} onClick={() => handleIconClick('participations')}>
+            <img src={participations} alt="Screen Share" className="icon participateIcon" />
+          </div>
+
 
           {/* Screen Image */}
           <div className="icon-container screen-icon" onClick={() => handleIconClick('screen')}>
@@ -87,7 +107,7 @@ const GroupFeatures = () => {
           <div className="icon-container endcall-icon">
             <img src={endcall} alt="End Call" className="icon" />
           </div>
-          
+
 
         </StyledBar>
 
@@ -140,6 +160,11 @@ const StyledBar = styled.div`
     width: 30px;
     height: 30px;
   }
+    .participateIcon
+    {
+     width: 40px;
+    height: 40px;
+    }
 
   .icon-container.clicked {
     background-color: #00bfff;
@@ -153,6 +178,13 @@ const StyledBar = styled.div`
 
   .screen-icon:hover, .endcall-icon:hover {
     background-color: rgba(255, 255, 255, 0.2);
+
+    border-radius: 50%;
+    transform: scale(1.1);
+  }
+  .screen-icon.clicked, .participations.clicked {
+    background-color: rgba(255, 255, 255, 0.2);
+     border : 2px solid #00bfff;
     border-radius: 50%;
     transform: scale(1.1);
   }

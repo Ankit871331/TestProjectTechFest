@@ -5,6 +5,8 @@ import creategroup from '../Features/counter/createGroup'
 import userProfileReducer from '../Features/counter/getProfile'
 import JoinedUsers from '../Features/counter/connectedUsersSlice'
 import codereducer from '../Features/counter/coderunnerSlice'
+import GroupIdUserName from '../Features/counter/passingGroupId'
+import toggleConnectUsers from '../Features/counter/toggleConnectUsers'
 
 
 export const store = configureStore({
@@ -14,6 +16,8 @@ export const store = configureStore({
     user : userProfileReducer,
     connectedUsers:JoinedUsers,
     codeexecution:codereducer,
+    passingGroupId:GroupIdUserName,
+    connectedUsers:toggleConnectUsers,
 
   },
 })

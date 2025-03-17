@@ -1,49 +1,60 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchUserProfile } from "../Features/counter/getProfile";
 import styled from "styled-components";
-import ScrollToBottom from "react-scroll-to-bottom";
+import ScrollToBottom, { useScrollToBottom } from "react-scroll-to-bottom";
 import { io } from "socket.io-client";
 import sendIcon from "../assets/sendicon.png";
-import GroupFeatures from "./groupFeatures";
-import vscodeicon from "../assets/vscode.svg";
 
 const socket = io(import.meta.env.VITE_SOCKETIO);
 
 const ChatBox = ({ isVisible, toggleChatBox }) => {
+  const scrollToBottom = useScrollToBottom();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
-  const [userId, setUserId] = useState(null);
+
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
-  const room = "chatRoom";
 
-  // Set up socket connection and message receiving
+  const dispatch = useDispatch();
+  const { profile } = useSelector((state) => state.user);
+  const groupId = profile?.user?.groupId;
+  const senderName = profile?.user?.name;
+  const user_id = profile?.user?._id;
+
+
   useEffect(() => {
-    socket.on("connect", () => {
-      setUserId(socket.id);
-      console.log("Connected with ID:", socket.id);
-    });
+    const token = localStorage.getItem("token");
+    if (token) {
+      dispatch(fetchUserProfile());
+    }
+  }, [dispatch]);
 
-    socket.emit("joinRoom", room);
-
-    socket.on("message", (message) => {
-      console.log("Received message:", message);
-      if (message.sender !== userId) {
-        setMessages((prevMessages) => [...prevMessages, { ...message, id: Date.now() }]);
-      }
-    });
-
-    return () => {
-      socket.off("connect");
-      socket.off("message");
-    };
-  }, [userId]);
-
-  // Scroll to the latest message automatically
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    if (groupId) {
+      socket.emit("joinRoom", {groupId,user_id});
+      console.log(`📢 Joined room: ${groupId}`);
+
+      // Listen for messages broadcasted by the server
+      socket.on("receiveGroupMessage", (message) => {
+        console.log("📩 Received message:", message);
+        setMessages((prev) => [...prev, message]);
+      });
+
+      return () => {
+        socket.off("receiveGroupMessage");
+      };
+    }
+  }, [groupId]);
+
+  useEffect(() => {
+    scrollToBottom({ behavior: "smooth" });
   }, [messages]);
 
-  // Auto-adjust the textarea height
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current;
     if (textarea) {
@@ -52,13 +63,20 @@ const ChatBox = ({ isVisible, toggleChatBox }) => {
     }
   };
 
-  // Handle sending a message
   const handleSend = () => {
-    if (input.trim() !== "" && userId) {
-      const newMessage = { text: input, sender: userId, id: Date.now() };
-      console.log("Sending message:", newMessage);
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
-      socket.emit("sendMessage", { room, message: input, sender: userId });
+    if (input.trim() && groupId && senderName) {
+      const messageData = {
+        user_id :user_id ,
+        groupId,
+        sender: senderName,
+        message: input,
+        time: new Date().toISOString(),
+      };
+
+      // Send the message to the server
+      socket.emit("sendGroupMessage", messageData);
+
+      // Clear the input without appending the message locally
       setInput("");
       setTimeout(() => adjustTextareaHeight(), 0);
     }
@@ -73,17 +91,20 @@ const ChatBox = ({ isVisible, toggleChatBox }) => {
         </button>
       </div>
       <ScrollToBottom className="chatbox-content">
-        {messages.map((message) => (
+        {messages.map((message, index) => (
           <div
-            key={message.id}
-            className={`message ${message.sender === userId ? "me" : "other"}`}
+            key={index}
+            className={`message ${message.user_id  === user_id ? "me" : "other"}`}
           >
-            {message.text}
+            {message.user_id !== user_id && (
+              <div className="sender-name">{message.sender}</div>
+            )}
+            {message.message}
           </div>
         ))}
         <div ref={messagesEndRef} />
       </ScrollToBottom>
-      <div className="chatbox-footer">
+      <div className="chatbox-footer " >
         <textarea
           ref={textareaRef}
           value={input}
@@ -100,15 +121,14 @@ const ChatBox = ({ isVisible, toggleChatBox }) => {
           <img src={sendIcon} alt="Send" />
         </button>
       </div>
-      <BottomCenterWrapper>
-        {/* <GroupFeatures /> */}
-      </BottomCenterWrapper>
     </StyledChatBox>
   );
 };
 
-// Styled Components
 
+
+
+// Styled Components
 const BottomCenterWrapper = styled.div`
   position: fixed;
   bottom: 20px;
@@ -120,7 +140,7 @@ const StyledChatBox = styled.div`
   position: fixed;
   top: 0;
   right: -400px;
-  width: 350px;
+  width: 300px;
   height: 100vh;
   background-color: #1a1a1a;
   color: white;
@@ -128,37 +148,15 @@ const StyledChatBox = styled.div`
   display: flex;
   flex-direction: column;
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
-  z-index: 9999; /* High z-index to overlap everything */
+  z-index: 99999; /* Ensure the chatbox appears above everything */
 
   &.visible {
     right: 0;
   }
 
-  /* Large tablets */
-  @media (max-width: 1024px) {
-    width: 300px;
-  }
-
-  /* Tablets and small laptops */
-  @media (max-width: 768px) {
-    width: 280px;
-  }
-
-  /* Fix for 480px and below */
-  @media (max-width: 480px) {
-    width: 260px; /* Instead of full width, set a fixed width */
-    right: -260px; /* Make sure it's hidden initially */
-
-    &.visible {
-      right: 0;
-    }
-  }
-
-  /* Extra small screens */
-  @media (max-width: 400px) {
-    width: 230px;
-    right: -230px;
-
+  @media (max-width: 600px) {
+    width: 100%;
+    right: -100%;
     &.visible {
       right: 0;
     }
@@ -247,9 +245,6 @@ const StyledChatBox = styled.div`
     height: 24px;
   }
 `;
-
-
-
 
 
 export default ChatBox;

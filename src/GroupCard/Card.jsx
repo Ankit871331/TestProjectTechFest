@@ -5,9 +5,9 @@ import styled from "styled-components";
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchUserProfile } from "../Features/counter/getProfile";
 import { addUserToGroup } from "../Features/counter/connectedUsersSlice";
-
+import { setGroupId, setUsername } from "../Features/counter/passingGroupId";
 // Initialize Socket.IO connection
-const socket = io(import.meta.env.VITE_SOCKETIO);
+const socket = io(import.meta.env.VITE_SOCKETIO, { transports: ["websocket"] });
 
 // Function to assign different colors to users
 const getColor = (index) => {
@@ -18,8 +18,10 @@ const getColor = (index) => {
 const Card = ({ uniqueId, name, language, topic, members = [] }) => {
   const dispatch = useDispatch();
   const { profile } = useSelector((state) => state.user);
-
+console.log("profile", profile);
   useEffect(() => {
+
+
     const token = localStorage.getItem('token');
     if (token) {
       dispatch(fetchUserProfile());
@@ -27,17 +29,23 @@ const Card = ({ uniqueId, name, language, topic, members = [] }) => {
   }, [dispatch]);
 
 
+
+
   // Handle joining the room and emitting socket events
   const handleJoinClick = () => {
     if (profile && profile.user && profile.user._id && uniqueId) {
-
+console.log("groupID", uniqueId);
 
       dispatch(addUserToGroup({ groupId: uniqueId, userId: profile.user._id }));
 
-      socket.emit("joinGroup", {groupId: uniqueId, userId: profile.user._id  });
+      socket.emit("joinGroup", { groupId: uniqueId, username: profile.user.name });
+
+
 
     }
   };
+
+
 
   // Display up to 3 members with name and circle, placeholders for empty slots
   const displayedMembers = members.slice(0, 3);

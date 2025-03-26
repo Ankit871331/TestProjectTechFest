@@ -6,7 +6,7 @@ import ScrollToBottom, { useScrollToBottom } from "react-scroll-to-bottom";
 import { io } from "socket.io-client";
 import sendIcon from "../assets/sendicon.png";
 
-const socket = io(import.meta.env.VITE_SOCKETIO);
+const socket = io(import.meta.env.VITE_SERVER_BASE_URL);
 
 const ChatBox = ({ isVisible, toggleChatBox }) => {
   const scrollToBottom = useScrollToBottom();

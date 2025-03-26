@@ -6,7 +6,7 @@ import Navbar from '../Navbar/Navbar';
 import Card from '../GroupCard/Card';
 import CreateGroup from '../Navbar/CreateGroupBtn';
 
-const socket = io(import.meta.env.VITE_SOCKETIO);
+const socket = io(import.meta.env.VITE_SERVER_BASE_URL);
 
 export default function Home() {
     const dispatch = useDispatch();

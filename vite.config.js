@@ -7,10 +7,8 @@ export default defineConfig({
   plugins: [react(),tailwindcss(),],
  server:{
 port:3000,
-  host: "0.0.0.0", // Allows access from Docker
-    strictPort: true,
-    watch: {
-      usePolling: true,
-    },
+
+allowedHosts: ["72bf-103-47-172-110.ngrok-free.app"],
+
  }
 })

@@ -25,7 +25,7 @@ export const registerUser = createAsyncThunk(
   'auth/registerUser',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await fetch('http://localhost:5000/user/v1/register', {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_BASE_URL}/user/v1/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),
@@ -52,7 +52,8 @@ export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await fetch('http://localhost:5000/user/v1/login', {
+      // const apiBaseURL = import.meta.env.VITE_SERVER_BASE_URL;
+      const response = await fetch(`${import.meta.env.VITE_SERVER_BASE_URL}/user/v1/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
@@ -65,7 +66,7 @@ export const loginUser = createAsyncThunk(
 
       // Store in localStorage
       localStorage.setItem("token", data.token);
-    //   localStorage.setItem("user", JSON.stringify(data.user));
+      //   localStorage.setItem("user", JSON.stringify(data.user));
 
       return data;
     } catch (error) {

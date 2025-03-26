@@ -7,6 +7,7 @@ import JoinedUsers from '../Features/counter/connectedUsersSlice'
 import codereducer from '../Features/counter/coderunnerSlice'
 import GroupIdUserName from '../Features/counter/passingGroupId'
 import toggleConnectUsers from '../Features/counter/toggleConnectUsers'
+import videocontroller from '../Features/counter/videoSlice'
 
 
 export const store = configureStore({
@@ -18,6 +19,7 @@ export const store = configureStore({
     codeexecution:codereducer,
     passingGroupId:GroupIdUserName,
     connectedUsers:toggleConnectUsers,
+    videocontroller:videocontroller,
 
   },
 })

@@ -4,7 +4,9 @@ import LeftBar from "./leftBar";
 import GroupFeatures from "./groupFeatures";
 import ConnectedUsers from "./connectedUsers";
 import { useDispatch, useSelector } from 'react-redux';
-import { keyframes } from "styled-components";
+
+import RoomJoin from "../VideoCallFeature.jsx/RoomJoin/RoomJoin";
+import VoiceOnly from "../VideoCallFeature.jsx/RoomJoin/Voice";
 
 export default function Chatroom() {
   const isParticipationsActive = useSelector((state) => state.connectedUsers.isToggled);
@@ -20,13 +22,9 @@ export default function Chatroom() {
       {/* Left Sidebar */}
       <LeftBar />
 
-      {/* ConnectedUsers in the center */}
+
       <CenterContent>
-        {isParticipationsActive && (
-          <AnimatedWrapper>
-            <ConnectedUsers />
-          </AnimatedWrapper>
-        )}
+        <RoomJoin />
       </CenterContent>
 
       {/* Group Features at the bottom with toggle */}
@@ -94,18 +92,4 @@ const VisibilityToggle = styled.div`
   }
 `;
 
-const fadeInUp = keyframes`
-  from {
-    opacity: 0;
-    transform: translateY(50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-`;
-
-const AnimatedWrapper = styled.div`
-  animation: ${fadeInUp} 0.3s ease-in-out;
-`;
 

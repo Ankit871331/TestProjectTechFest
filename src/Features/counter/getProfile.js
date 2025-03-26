@@ -8,7 +8,7 @@ export const fetchUserProfile = createAsyncThunk(
     try {
       const token = localStorage.getItem('token'); // Get token from localStorage
 
-      const response = await fetch(`http://localhost:5000/user/v1/profile`, {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_BASE_URL}/user/v1/profile`, {
         method: 'GET', // Use GET since we're just fetching data
         headers: {
           'Content-Type': 'application/json',

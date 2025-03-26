@@ -4,13 +4,15 @@ import screen from "../assets/screenshare.png";
 import endcall from "../assets/endcall.png";
 import participations from "../assets/participateSVg.svg";
 import { useDispatch, useSelector } from 'react-redux';
-import {toggle} from "../Features/counter/toggleConnectUsers"
+import {toggleState,setTrue, setFalse} from "../Features/counter/toggleConnectUsers"
 
 const GroupFeatures = () => {
   const dispatch = useDispatch();
 
   const isParticipationsActive = useSelector((state) => state.connectedUsers.isToggled);
-  console.log("participation",isParticipationsActive)
+  const micToggleBtn = useSelector((state) => state.connectedUsers.isMicoff);
+  const VideoToggleBtn = useSelector((state) => state.connectedUsers.isVideooff);
+console.log("isParticipationsActiveisParticipationsActive",isParticipationsActive)
 
   const [clickedIcons, setClickedIcons] = useState({
     mic: true,
@@ -24,10 +26,15 @@ const GroupFeatures = () => {
 
   const handleIconClick = (icon) => {
 
-  if(icon === "participations")
-  {
-    dispatch(toggle())
-  }
+    if (icon === "participations") {
+      dispatch(isParticipationsActive ? setFalse("isToggled") : setTrue("isToggled"));
+    }
+    else if (icon === "mic") {
+      dispatch(micToggleBtn ? setFalse("isMicoff") : setTrue("isMicoff"));
+    }
+    else if (icon === "polygon") {
+      dispatch(VideoToggleBtn ? setFalse("isVideooff") : setTrue("isVideooff"));
+    }
     setClickedIcons((prevState) => ({
       ...prevState,
       [icon]: !prevState[icon], // Toggle independently

@@ -10,10 +10,11 @@ export const addUserToGroup = createAsyncThunk(
   async ({ groupId, userId }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/user/v1/group/connect`, {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_BASE_URL}/user/v1/group/connect`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ groupId, userId }),
@@ -62,7 +63,7 @@ export const setupSocketListeners = (dispatch) => {
   const fetchConnectedUsers = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:5000/user/v1/group/connect`, {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_BASE_URL}/user/v1/group/connect`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

@@ -19,7 +19,7 @@ export const runCode = createAsyncThunk(
     const { signal } = controller;
 
     try {
-      const response = await fetch("http://localhost:5000/user/v1/coderunner", {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_BASE_URL}/user/v1/coderunner`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ language, code }),

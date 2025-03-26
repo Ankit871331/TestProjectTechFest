@@ -7,6 +7,7 @@ import Home from './Home/Home';
 import TabAnimation from './Navbar/TabAnimation';
 import './App.css';
 import ConnectedUsers from './AfterJoinGrp/connectedUsers';
+import DrawingBoard from './AfterJoinGrp/DrawingCollab';
 
 function App() {
   return (
@@ -17,7 +18,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<ChatRoom />} />
           <Route path="/form" element={<TabAnimation />} />
-          
+          <Route path="/drawing" element={<DrawingBoard />} />
+
           <Route path="/videoCall" element={<RoomJoin />} />
         </Routes>
       </WebRTCProvider>

@@ -6,11 +6,9 @@ import drawIcon from '../assets/drawing.svg';
 import toolsIcon from '../assets/moreTools.svg';
 import { Tooltip } from 'react-tooltip';
 import 'react-tooltip/dist/react-tooltip.css'; // Import the CSS
-import CodeEditor from './codeMIrror'; // Import the CodeEditor
-import RoomJoin from '../VideoCallFeature.jsx/RoomJoin/RoomJoin';
 
 
-const LeftBar = () => {
+const ChatRoom = () => {
   const [isChatBoxVisible, setIsChatBoxVisible] = useState(true);
   const [isVSCodeIconClicked, setIsVSCodeIconClicked] = useState(false);
   const [isDrawIconClicked, setIsDrawIconClicked] = useState(false);
@@ -63,11 +61,13 @@ const LeftBar = () => {
 
         <Tooltip id="vscode" place="left" />
 
+
         <div className={`icon-container ${isDrawIconClicked ? 'draw-clicked' : ''}`} onClick={handleDrawIconClick} data-tooltip-id="Draw"
         data-tooltip-content="Drawing Box">
           <img src={drawIcon} alt="Draw" className={`icon ${isDrawIconClicked ? 'white-icon' : ''}`} />
         </div>
         <Tooltip id="Draw" place="left" />
+
 
         <div className={`icon-container ${isToolsIconClicked ? 'tools-clicked' : ''}`} onClick={handleToolsIconClick} data-tooltip-id="Tools"
         data-tooltip-content="more tools">
@@ -75,10 +75,7 @@ const LeftBar = () => {
         </div>
         <Tooltip id="Tools" place="left" />
       </StyledSidebar>
-
-      {/* Conditionally render the ChatBox and CodeEditor */}
-      {isChatBoxVisible && <ChatBox isVisible={isChatBoxVisible} toggleChatBox={handleChatIconClick} />}
-      {isVSCodeIconClicked && <EditorContainer><CodeEditor /></EditorContainer>}
+      <ChatBox isVisible={isChatBoxVisible} toggleChatBox={handleChatIconClick} />
     </>
   );
 };
@@ -91,11 +88,7 @@ const StyledSidebar = styled.div`
   flex-direction: column;
   align-items: center;
   padding-top: 20px;
-  gap: 50px;
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 1000;
+  gap : 50px;
 
   .icon-container {
     display: flex;
@@ -130,13 +123,8 @@ const StyledSidebar = styled.div`
     stroke: white;
     filter: brightness(0) invert(1);
   }
-`;
 
-const EditorContainer = styled.div`
-  position: absolute;
-  top: 10px;
-  left: 90px; /* Adjust to match sidebar width */
 
 `;
 
-export default LeftBar;
+export default ChatRoom;

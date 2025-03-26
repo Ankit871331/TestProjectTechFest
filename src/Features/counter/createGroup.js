@@ -5,7 +5,7 @@ export const createGroup = createAsyncThunk(
     "groups/createGroup",
     async (groupData, { rejectWithValue }) => {
         try {
-            const response = await fetch("http://localhost:5000/user/v1/createGroup", {
+            const response = await fetch(`${import.meta.env.VITE_SERVER_BASE_URL}/user/v1/createGroup`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(groupData),
@@ -27,7 +27,7 @@ export const fetchGroups = createAsyncThunk(
     "groups/fetchGroups",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await fetch("http://localhost:5000/user/v1/getGroupData");
+            const response = await fetch(`${import.meta.env.VITE_SERVER_BASE_URL}/user/v1/getGroupData`);
 
             if (!response.ok) {
                 throw new Error("Failed to fetch groups");

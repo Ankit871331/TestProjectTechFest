@@ -5,9 +5,9 @@ import styled from "styled-components";
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchUserProfile } from "../Features/counter/getProfile";
 import { addUserToGroup } from "../Features/counter/connectedUsersSlice";
-import { setGroupId, setUsername } from "../Features/counter/passingGroupId";
+import {setFalse,setTrue} from "../Features/counter/toggleConnectUsers"
 // Initialize Socket.IO connection
-const socket = io(import.meta.env.VITE_SOCKETIO, { transports: ["websocket"] });
+const socket = io(import.meta.env.VITE_SERVER_BASE_URL, { transports: ["websocket"] });
 
 // Function to assign different colors to users
 const getColor = (index) => {
@@ -18,7 +18,10 @@ const getColor = (index) => {
 const Card = ({ uniqueId, name, language, topic, members = [] }) => {
   const dispatch = useDispatch();
   const { profile } = useSelector((state) => state.user);
-console.log("profile", profile);
+    const isUserJoinedCall = useSelector((state) => state.connectedUsers.isUserJoinedCall);
+    console.log("isUserJoinedCall", isUserJoinedCall);
+
+
   useEffect(() => {
 
 
@@ -34,13 +37,15 @@ console.log("profile", profile);
   // Handle joining the room and emitting socket events
   const handleJoinClick = () => {
     if (profile && profile.user && profile.user._id && uniqueId) {
-console.log("groupID", uniqueId);
+      console.log("groupID", uniqueId);
 
       dispatch(addUserToGroup({ groupId: uniqueId, userId: profile.user._id }));
 
       socket.emit("joinGroup", { groupId: uniqueId, username: profile.user.name });
-
-
+      if(!isUserJoinedCall)
+      {
+        dispatch(setTrue("isUserJoinedCall"))
+      }
 
     }
   };

@@ -12,13 +12,14 @@ const ChatBox = ({ isVisible, toggleChatBox }) => {
   const scrollToBottom = useScrollToBottom();
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
-
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
 
   const dispatch = useDispatch();
   const { profile } = useSelector((state) => state.user);
-  const groupId = profile?.user?.groupId;
+  const groupId = useSelector((state) => state.passingGroupId.groupId);
+  // console.log("idofGroup")
+  // const groupId = profile?.user?.groupId;
   const senderName = profile?.user?.name;
   const user_id = profile?.user?._id;
 
@@ -36,7 +37,7 @@ const ChatBox = ({ isVisible, toggleChatBox }) => {
     }
 
     if (groupId) {
-      socket.emit("joinRoom", {groupId,user_id});
+      socket.emit("joinRoom", { groupId, user_id });
       console.log(`📢 Joined room: ${groupId}`);
 
       // Listen for messages broadcasted by the server
@@ -66,7 +67,7 @@ const ChatBox = ({ isVisible, toggleChatBox }) => {
   const handleSend = () => {
     if (input.trim() && groupId && senderName) {
       const messageData = {
-        user_id :user_id ,
+        user_id: user_id,
         groupId,
         sender: senderName,
         message: input,
@@ -94,7 +95,7 @@ const ChatBox = ({ isVisible, toggleChatBox }) => {
         {messages.map((message, index) => (
           <div
             key={index}
-            className={`message ${message.user_id  === user_id ? "me" : "other"}`}
+            className={`message ${message.user_id === user_id ? "me" : "other"}`}
           >
             {message.user_id !== user_id && (
               <div className="sender-name">{message.sender}</div>
@@ -112,11 +113,17 @@ const ChatBox = ({ isVisible, toggleChatBox }) => {
             setInput(e.target.value);
             adjustTextareaHeight();
           }}
-          onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault(); // Prevents new line
+              handleSend();
+            }
+          }}
           placeholder="Type a message..."
           className="chat-input"
           rows={1}
         />
+
         <button onClick={handleSend} className="send-btn">
           <img src={sendIcon} alt="Send" />
         </button>
@@ -148,13 +155,26 @@ const StyledChatBox = styled.div`
   display: flex;
   flex-direction: column;
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+  transform: translateX(100%); /* Start off-screen to the right */
+
   z-index: 99999; /* Ensure the chatbox appears above everything */
+
+  animation: slideInFromRight 0.3s ease-in-out forwards; /* Animate on mount */
+
+  @keyframes slideInFromRight {
+    from {
+      transform: translateX(100%); /* Start off-screen to the right */
+    }
+    to {
+      transform: translateX(0); /* Slide to the left */
+    }
+  }
 
   &.visible {
     right: 0;
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 458px) {
     width: 100%;
     right: -100%;
     &.visible {
@@ -185,7 +205,16 @@ const StyledChatBox = styled.div`
     padding: 10px;
     overflow-y: auto;
     max-height: calc(100vh - 100px);
-  }
+
+    scrollbar-width: thin; /* Firefox */
+  scrollbar-color: transparent transparent; /* Firefox */
+  -ms-overflow-style: none; /* IE & Edge */
+}
+
+.chatbox-content::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
 
   .message {
     padding: 10px;

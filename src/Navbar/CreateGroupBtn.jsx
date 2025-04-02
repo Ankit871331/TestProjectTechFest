@@ -1,6 +1,8 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import React, { useState,useEffect } from "react";
+import { useDispatch,useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
+import { fetchUserProfile } from "../Features/counter/getProfile";
+import { setOwnerId } from "../Features/counter/passingGroupId";
 import { X } from "lucide-react";
 import { createGroup } from "../Features/counter/createGroup"; // Import the action
 
@@ -8,11 +10,21 @@ const CreateGroup = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [topic, setTopic] = useState(""); // State for topic input
   const [language, setLanguage] = useState(""); // State for language input
+  const { profile } = useSelector((state) => state.user);
+  const ownerId = profile?.user?._id
+
+
   const dispatch = useDispatch();
 
   const togglePopup = () => {
     setIsOpen(!isOpen);
   };
+
+    useEffect(() => {
+          dispatch(fetchUserProfile());
+      }, [dispatch]);
+
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -22,6 +34,7 @@ const CreateGroup = () => {
 
     // Dispatch the Redux action
     dispatch(createGroup(groupData));
+    dispatch(setOwnerId(ownerId));
 
     // Log data to console
     console.log("Group created successfully:", groupData);

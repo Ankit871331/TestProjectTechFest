@@ -1,11 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import io from 'socket.io-client';
 import styled from "styled-components";
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchUserProfile } from "../Features/counter/getProfile";
+import { setLockState,setGroupId } from "../Features/counter/passingGroupId";
+
 import { addUserToGroup } from "../Features/counter/connectedUsersSlice";
-import {setFalse,setTrue} from "../Features/counter/toggleConnectUsers"
+import { setFalse, setTrue } from "../Features/counter/toggleConnectUsers"
 // Initialize Socket.IO connection
 const socket = io(import.meta.env.VITE_SERVER_BASE_URL, { transports: ["websocket"] });
 
@@ -17,20 +19,40 @@ const getColor = (index) => {
 
 const Card = ({ uniqueId, name, language, topic, members = [] }) => {
   const dispatch = useDispatch();
+  const [isLocked, setIsLocked] = useState(false);
   const { profile } = useSelector((state) => state.user);
-    const isUserJoinedCall = useSelector((state) => state.connectedUsers.isUserJoinedCall);
-    console.log("isUserJoinedCall", isUserJoinedCall);
+  const isUserJoinedCall = useSelector((state) => state.connectedUsers.isUserJoinedCall);
+
+  const [lockedGroups, setLockedGroups] = useState({});
+
+  useEffect(() => {
+          if (profile?.user?.groupId) {
+              console.log(profile.user.groupId);
+          }
+      }, [profile]);
 
 
   useEffect(() => {
-
-
     const token = localStorage.getItem('token');
     if (token) {
       dispatch(fetchUserProfile());
     }
   }, [dispatch]);
 
+  useEffect(() => {
+    socket.on("toggleLock", ({ groupId, lockState }) => {
+      dispatch(setLockState({ groupId, newLockState: lockState }));
+      console.log("groupId", groupId)
+      setLockedGroups((prev) => ({
+        ...prev,
+        [groupId]: lockState, // Update only the specific group
+      }));
+    });
+
+    return () => {
+      socket.off("toggleLock");
+    };
+  }, [dispatch]);
 
 
 
@@ -38,12 +60,12 @@ const Card = ({ uniqueId, name, language, topic, members = [] }) => {
   const handleJoinClick = () => {
     if (profile && profile.user && profile.user._id && uniqueId) {
       console.log("groupID", uniqueId);
+      dispatch(setGroupId(uniqueId))
 
       dispatch(addUserToGroup({ groupId: uniqueId, userId: profile.user._id }));
 
       socket.emit("joinGroup", { groupId: uniqueId, username: profile.user.name });
-      if(!isUserJoinedCall)
-      {
+      if (!isUserJoinedCall) {
         dispatch(setTrue("isUserJoinedCall"))
       }
 
@@ -105,16 +127,24 @@ const Card = ({ uniqueId, name, language, topic, members = [] }) => {
       </div>
 
       {/* Join Group Button */}
-      <div className="flex justify-center">
-        <Link to="home" className="w-full">
-          <button
-            className="bg-[#00BFFF] text-white px-4 py-2 rounded-lg w-full transition-transform duration-200 hover:scale-105"
-            onClick={handleJoinClick}
-          >
-            Join
-          </button>
-        </Link>
-      </div>
+
+      {(
+        <div className="flex justify-center">
+          <Link to="home" className="w-full">
+            <button
+              className={`px-4 py-2 rounded-lg w-full transition-transform duration-200
+          ${lockedGroups[uniqueId]
+                  ? "bg-gray-400 cursor-not-allowed" // Disabled state (gray color)
+                  : "bg-[#00BFFF] hover:scale-105 text-white"}`
+              }
+              onClick={lockedGroups[uniqueId] ? null : handleJoinClick}
+              disabled={lockedGroups[uniqueId]}
+            >
+              Join
+            </button>
+          </Link>
+        </div>
+      )}
     </div>
   );
 };

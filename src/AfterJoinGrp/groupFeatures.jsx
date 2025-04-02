@@ -4,7 +4,7 @@ import screen from "../assets/screenshare.png";
 import endcall from "../assets/endcall.png";
 import participations from "../assets/participateSVg.svg";
 import { useDispatch, useSelector } from 'react-redux';
-import {toggleState,setTrue, setFalse} from "../Features/counter/toggleConnectUsers"
+import { toggleState, setTrue, setFalse } from "../Features/counter/toggleConnectUsers";
 
 const GroupFeatures = () => {
   const dispatch = useDispatch();
@@ -12,28 +12,28 @@ const GroupFeatures = () => {
   const isParticipationsActive = useSelector((state) => state.connectedUsers.isToggled);
   const micToggleBtn = useSelector((state) => state.connectedUsers.isMicoff);
   const VideoToggleBtn = useSelector((state) => state.connectedUsers.isVideooff);
-console.log("isParticipationsActiveisParticipationsActive",isParticipationsActive)
+  const isscreen = useSelector((state) => state.connectedUsers.isScreenOff);
+  console.log("screen", isscreen);
 
   const [clickedIcons, setClickedIcons] = useState({
     mic: true,
     polygon: true,
     screen: false,
-    participations:false,
-
+    participations: false,
   });
 
   const [isVisible, setIsVisible] = useState(true); // State to manage visibility
 
-  const handleIconClick = (icon) => {
-
+  const handleIconClick = (icon) => {//setTrue
     if (icon === "participations") {
       dispatch(isParticipationsActive ? setFalse("isToggled") : setTrue("isToggled"));
-    }
-    else if (icon === "mic") {
+    } else if (icon === "mic") {
       dispatch(micToggleBtn ? setFalse("isMicoff") : setTrue("isMicoff"));
-    }
-    else if (icon === "polygon") {
+    } else if (icon === "polygon") {
       dispatch(VideoToggleBtn ? setFalse("isVideooff") : setTrue("isVideooff"));
+    }
+    else if (icon === "screen") {
+      dispatch(isscreen ? setFalse("isScreenOff") : setTrue("isScreenOff"));
     }
     setClickedIcons((prevState) => ({
       ...prevState,
@@ -47,10 +47,9 @@ console.log("isParticipationsActiveisParticipationsActive",isParticipationsActiv
 
   return (
     <>
-
       {isVisible && (
         <StyledBar>
-          {/* Mic SVG */}
+
           <div
             className={`icon-container ${clickedIcons.mic ? 'clicked' : ''}`}
             onClick={() => handleIconClick('mic')}
@@ -73,7 +72,7 @@ console.log("isParticipationsActiveisParticipationsActive",isParticipationsActiv
             </svg>
           </div>
 
-        {/* Video call Icons  */}
+          {/* Video call Icons */}
           <div
             className={`icon-container ${clickedIcons.polygon ? 'clicked' : ''}`}
             onClick={() => handleIconClick('polygon')}
@@ -99,11 +98,14 @@ console.log("isParticipationsActiveisParticipationsActive",isParticipationsActiv
               />
             </svg>
           </div>
-           {/* Participations */}
-          <div className={`icon-container screen-icon ${clickedIcons.participations ? 'clicked' : ''}`} onClick={() => handleIconClick('participations')}>
+
+          {/* Participations */}
+          <div
+            className={`icon-container screen-icon ${clickedIcons.participations ? 'clicked' : ''}`}
+            onClick={() => handleIconClick('participations')}
+          >
             <img src={participations} alt="Screen Share" className="icon participateIcon" />
           </div>
-
 
           {/* Screen Image */}
           <div className="icon-container screen-icon" onClick={() => handleIconClick('screen')}>
@@ -114,36 +116,15 @@ console.log("isParticipationsActiveisParticipationsActive",isParticipationsActiv
           <div className="icon-container endcall-icon">
             <img src={endcall} alt="End Call" className="icon" />
           </div>
-
-
         </StyledBar>
-
       )}
     </>
   );
 };
 
-const VisibilityToggle = styled.div`
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  cursor: pointer;
-  z-index: 10;
-  color: blue;
-  font-size: 16px;
-  font-weight: bold;
-
-  @media (max-width: 768px) {
-    font-size: 14px;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 12px;
-  }
-`;
-
 const StyledBar = styled.div`
-  width: 100%;
+  // width: 100%;
+  max-width: 500px; /* Limit width for better appearance */
   background-color: #333;
   display: flex;
   justify-content: center;
@@ -151,7 +132,8 @@ const StyledBar = styled.div`
   border-radius: 30px;
   padding: 10px;
   gap: 15px;
-  flex-wrap: wrap;
+  // flex-wrap: wrap;
+  z-index:2;
 
   .icon-container {
     display: flex;
@@ -167,11 +149,10 @@ const StyledBar = styled.div`
     width: 30px;
     height: 30px;
   }
-    .participateIcon
-    {
-     width: 40px;
+  .participateIcon {
+    width: 40px;
     height: 40px;
-    }
+  }
 
   .icon-container.clicked {
     background-color: #00bfff;
@@ -183,42 +164,55 @@ const StyledBar = styled.div`
     fill: white;
   }
 
-  .screen-icon:hover, .endcall-icon:hover {
+  .screen-icon:hover,
+  .endcall-icon:hover {
     background-color: rgba(255, 255, 255, 0.2);
-
     border-radius: 50%;
     transform: scale(1.1);
   }
-  .screen-icon.clicked, .participations.clicked {
+  .screen-icon.clicked,
+  .participations.clicked {
     background-color: rgba(255, 255, 255, 0.2);
-     border : 2px solid #00bfff;
+    border: 2px solid #00bfff;
     border-radius: 50%;
     transform: scale(1.1);
   }
 
-@media (max-width: 768px) {
-  .icon-container {
-    width: max(40px, 6vw);
-    height: max(40px, 6vw);
+  @media (min-width: 551px) and (max-width: 693px) {
+  border : 2px solid blue;
+  width: 350px;
+
+  .participations.clicked {
+    border: 2px solid #00bfff;
   }
 
-  .icon {
-    width: max(22px, 4vw);
-    height: max(22px, 4vw);
+  .icon-container.clicked {
+    background-color: #00bfff;
+    border-radius: 30%;
+    transform: scale(1.1);
   }
 }
 
-
- @media (max-width: 480px) {
-  .icon-container {
-    width: max(40px, 7vw);
-    height: max(40px, 7vw);
+  @media (min-width: 470px) and (max-width: 551px) {
+  width: 300px;
+  border : 2px solid blue;
+   margin-left:50px;
+  }
+  @media (min-width: 350px) and (max-width: 470px) {
+  width: 300px;
+  border : 2px solid blue;
+   margin-left:50px;
+  }
+  @media (min-width: 200px) and (max-width: 350px) {
+  width: 200px;
+  border : 2px solid blue;
+   margin-left:50px;
   }
 
-  .icon {
-    width: max(25px, 4vw);
-    height: max(25px, 4vw);
-  }
+
+
+
+
 }
 
 `;

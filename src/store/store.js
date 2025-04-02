@@ -8,6 +8,7 @@ import codereducer from '../Features/counter/coderunnerSlice'
 import GroupIdUserName from '../Features/counter/passingGroupId'
 import toggleConnectUsers from '../Features/counter/toggleConnectUsers'
 import videocontroller from '../Features/counter/videoSlice'
+import chatGptReducer from "../Features/counter/chatGpt"
 
 
 export const store = configureStore({
@@ -20,6 +21,7 @@ export const store = configureStore({
     passingGroupId:GroupIdUserName,
     connectedUsers:toggleConnectUsers,
     videocontroller:videocontroller,
+    chatGpt:chatGptReducer
 
   },
 })

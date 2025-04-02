@@ -6,8 +6,9 @@ import ChatRoom from './AfterJoinGrp/Chatroom';
 import Home from './Home/Home';
 import TabAnimation from './Navbar/TabAnimation';
 import './App.css';
-import ConnectedUsers from './AfterJoinGrp/connectedUsers';
+// import ConnectedUsers from './AfterJoinGrp/connectedUsers';
 import DrawingBoard from './AfterJoinGrp/DrawingCollab';
+import ScreenShare from './AfterJoinGrp/ScreenShare';
 
 function App() {
   return (
@@ -20,7 +21,7 @@ function App() {
           <Route path="/form" element={<TabAnimation />} />
           <Route path="/drawing" element={<DrawingBoard />} />
 
-          <Route path="/videoCall" element={<RoomJoin />} />
+          <Route path="/screenShare" element={<ScreenShare />} />
         </Routes>
       </WebRTCProvider>
     </Router>

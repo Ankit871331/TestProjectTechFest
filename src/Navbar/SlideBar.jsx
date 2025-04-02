@@ -10,34 +10,73 @@ export default function SlideBar() {
 
   return (
     <>
-      <div className="flex flex-col space-y-1 cursor-pointer" onClick={toggleSidebar}>
-        <div className="w-6 h-[3px] bg-white"></div>
-        <div className="w-6 h-[3px] bg-white"></div>
-        <div className="w-6 h-[3px] bg-white"></div>
+      {/* Hamburger Menu Button */}
+      <button
+        className="flex flex-col space-y-1.5 cursor-pointer p-2 hover:bg-gray-800 rounded-md transition-colors"
+        onClick={toggleSidebar}
+        aria-label="Toggle menu"
+      >
+        <span className="w-6 h-[3px] bg-white rounded"></span>
+        <span className="w-6 h-[3px] bg-white rounded"></span>
+        <span className="w-6 h-[3px] bg-white rounded"></span>
+      </button>
+
+      {/* Sidebar */}
+      <div
+        className={`fixed top-0 left-0 h-full bg-[#131212] text-white z-50 transition-all duration-300 ease-in-out overflow-hidden`}
+        style={{
+          width: isOpen ? '280px' : '0px',
+        }}
+      >
+        <div className="p-6 h-full flex flex-col min-w-[280px]">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-xl font-semibold tracking-tight">Menu</h2>
+            <button
+              className="bg-red-600 px-3 py-1 rounded-md hover:bg-red-700 transition-colors text-sm font-medium"
+              onClick={toggleSidebar}
+            >
+              Close
+            </button>
+          </div>
+
+          <ul className="space-y-4 flex-grow">
+            <li>
+              <a href="#" className="text-lg hover:text-gray-300 transition-colors block">
+                Home
+              </a>
+            </li>
+            <li>
+              <a href="#" className="text-lg hover:text-gray-300 transition-colors block">
+                Profile
+              </a>
+            </li>
+            <li>
+              <a href="#" className="text-lg hover:text-gray-300 transition-colors block">
+                Settings
+              </a>
+            </li>
+            <li>
+              <a href="#" className="text-lg hover:text-gray-300 transition-colors block">
+                Logout
+              </a>
+            </li>
+            <li className="flex items-center">
+              <img src={signIn} alt="Sign In" className="h-6 w-6 mr-3" />
+              <a href="#" className="text-lg hover:text-gray-300 transition-colors">
+                Sign In
+              </a>
+            </li>
+          </ul>
+        </div>
       </div>
 
-      <div
-        className={`fixed top-0 left-0 h-full bg-gray-900 text-white p-6 z-50 transform transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0 w-3/4 sm:w-1/2 md:w-1/3' : '-translate-x-full w-full'
-        }`}
-      >
-        <button
-          className="bg-red-500 px-4 py-2 rounded mb-4"
+      {/* Overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
           onClick={toggleSidebar}
-        >
-          Close
-        </button>
-        <ul>
-          <li className="mb-2">Home</li>
-          <li className="mb-2">Profile</li>
-          <li className="mb-2">Settings</li>
-          <li className="mb-2">Logout</li>
-          <li className="mb-2 flex items-center">
-            <img src={signIn} alt="Sign In" className="h-8 w-8 mr-2" />
-            <span>Sign In</span>
-          </li>
-        </ul>
-      </div>
+        />
+      )}
     </>
   );
 }

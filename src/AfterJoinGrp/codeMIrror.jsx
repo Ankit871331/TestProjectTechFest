@@ -66,6 +66,7 @@ class CustomAwareness {
 }
 
 const CodeEditor = () => {
+  const socket = io(import.meta.env.VITE_SERVER_BASE_URL);
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
   const dispatch = useDispatch();
@@ -82,9 +83,9 @@ const CodeEditor = () => {
   const { profile } = useSelector((state) => state.user);
   const groupsState = useSelector((state) => state.group);
   const [isEditorReady, setIsEditorReady] = useState(false);
-  const groupId = profile?.user?.groupId;
+    const groupId = useSelector((state) => state.passingGroupId.groupId);
+  // const groupId = profile?.user?.groupId;
   const currentUserId = profile?.user?._id;
-  const socket = io(import.meta.env.VITE_SERVER_BASE_URL);
 
   const targetGroup = groupsState?.groups?.find(
     (group) => group._id === groupId
@@ -445,6 +446,11 @@ const EditorContainer = styled.div`
     width: calc(100vw - 20px);
     height: 100vh;
   }
+  @media (max-width: 1222px) {
+    width: calc(100vw - 100px);
+    height: 100vh;
+  }
+
 `;
 
 const Toolbar = styled.div`

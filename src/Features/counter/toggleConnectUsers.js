@@ -4,8 +4,10 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   isToggled: false, // Default value
   isUserJoinedCall: false,
-  isMicoff:false,
-  isVideooff:false,
+  isMicoff:true,
+  isVideooff:true,
+  isScreenOff:false,
+  isSharingScreen :false,
 };
 
 const toggleConnectUsers = createSlice({

@@ -1,13 +1,43 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import io from "socket.io-client";
+
+// Initialize socket connection
+const socket = io(import.meta.env.VITE_SERVER_BASE_URL, {
+  transports: ["websocket"],
+});
 
 const CodeSender = () => {
+  const groupId = useSelector((state) => state.passingGroupId.groupId);
   const [activeTab, setActiveTab] = useState("sending");
   const [codeInput, setCodeInput] = useState("");
   const [receivedCode, setReceivedCode] = useState("");
+  const [copyButtonText, setCopyButtonText] = useState("Copy"); // Track button text
+
+  // Socket.io setup
+  useEffect(() => {
+    if (groupId) {
+      socket.emit("joinGroup", { groupId });
+      console.log(`Joined group: ${groupId}`);
+    }
+
+    socket.on("codeReceived", (data) => {
+      console.log("Code received from server:", data.code);
+      setReceivedCode(data.code);
+    });
+
+    return () => {
+      socket.off("codeReceived");
+      if (groupId) {
+        socket.emit("leaveGroup", { groupId });
+        console.log(`Left group: ${groupId}`);
+      }
+    };
+  }, [groupId]);
 
   // Check backdrop-filter support (for debugging)
   useEffect(() => {
@@ -16,17 +46,23 @@ const CodeSender = () => {
   }, []);
 
   const handleSend = () => {
-    if (codeInput.trim()) {
-      console.log("Sending code:", codeInput);
-      setReceivedCode(codeInput);
+    if (codeInput.trim() && groupId) {
+      console.log("Sending code:", codeInput, "to group:", groupId);
+      socket.emit("shareCode", { code: codeInput, groupId });
       setCodeInput("");
+    } else {
+      console.log("No code or groupId to send");
     }
   };
 
   const handleCopy = () => {
     if (receivedCode) {
       navigator.clipboard.writeText(receivedCode).then(
-        () => console.log("Code copied to clipboard!"),
+        () => {
+          console.log("Code copied to clipboard!");
+          setCopyButtonText("Copied"); // Change to "Copied"
+          setTimeout(() => setCopyButtonText("Copy"), 2000); // Revert after 2 seconds
+        },
         (err) => console.error("Failed to copy code:", err)
       );
     }
@@ -41,7 +77,7 @@ const CodeSender = () => {
         transition={{ duration: 0.5 }}
       />
 
-      {/* Overlay (Opacity Only) */}
+      {/* Overlay */}
       <Overlay
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.3 }}
@@ -88,6 +124,8 @@ const CodeSender = () => {
                   minHeight: "100px",
                   maxHeight: "300px",
                   overflowY: "auto",
+                  fontSize: "14px", // Ensure readable size
+                  lineHeight: "1.5", // Improve readability
                 }}
               >
                 {codeInput || "// Start typing your code..."}
@@ -110,12 +148,14 @@ const CodeSender = () => {
                   maxHeight: "300px",
                   overflowY: "auto",
                   width: "100%",
+                  fontSize: "14px", // Ensure readable size
+                  lineHeight: "1.5", // Improve readability
                 }}
               >
                 {receivedCode || "// No code received yet..."}
               </SyntaxHighlighter>
               <CopyButton onClick={handleCopy} disabled={!receivedCode}>
-                Copy
+                {copyButtonText}
               </CopyButton>
             </ReceivingSection>
           )}
@@ -136,6 +176,7 @@ const Wrapper = styled.div`
   justify-content: center;
   align-items: flex-start;
   z-index: 998;
+  isolation: isolate; /* Prevent blur from affecting children */
 `;
 
 const BlurredBackground = styled(motion.div)`
@@ -144,7 +185,8 @@ const BlurredBackground = styled(motion.div)`
   left: 0;
   width: 100%;
   height: 100%;
-  background: url("https://via.placeholder.com/1920x1080.png?text=Gradient+Background") no-repeat center center;
+  background: url("https://via.placeholder.com/1920x1080.png?text=Gradient+Background")
+    no-repeat center center;
   background-size: cover;
   filter: blur(5px);
   z-index: 998;
@@ -156,11 +198,9 @@ const Overlay = styled(motion.div)`
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Dark overlay */
-  backdrop-filter: blur(10px); /* Apply background blur */
+  background-color: rgba(0, 0, 0, 0.5);
   z-index: 999;
 `;
-
 
 const PopupContainer = styled(motion.div)`
   position: relative;
@@ -223,6 +263,7 @@ const Textarea = styled.textarea`
   resize: vertical;
   font-family: "Courier New", Courier, monospace;
   font-size: 14px;
+  line-height: 1.5; /* Improve readability */
 
   &::placeholder {
     color: #aaa;

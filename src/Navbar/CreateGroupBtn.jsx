@@ -1,18 +1,18 @@
-import React, { useState,useEffect } from "react";
-import { useDispatch,useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import { fetchUserProfile } from "../Features/counter/getProfile";
 import { setOwnerId } from "../Features/counter/passingGroupId";
 import { X } from "lucide-react";
-import { createGroup } from "../Features/counter/createGroup"; // Import the action
+import { createGroup } from "../Features/counter/createGroup";
 
 const CreateGroup = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [topic, setTopic] = useState(""); // State for topic input
-  const [language, setLanguage] = useState(""); // State for language input
+  const [topic, setTopic] = useState("");
+  const [language, setLanguage] = useState("");
+  const [numberOfMembers, setNumberOfMembers] = useState(""); // New state for number of members
   const { profile } = useSelector((state) => state.user);
-  const ownerId = profile?.user?._id
-
+  const ownerId = profile?.user?._id;
 
   const dispatch = useDispatch();
 
@@ -20,17 +20,19 @@ const CreateGroup = () => {
     setIsOpen(!isOpen);
   };
 
-    useEffect(() => {
-          dispatch(fetchUserProfile());
-      }, [dispatch]);
-
-
+  useEffect(() => {
+    dispatch(fetchUserProfile());
+  }, [dispatch]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!topic || !language) return;
+    if (!topic || !language || !numberOfMembers) return;
 
-    const groupData = { Topic: topic, Language: language };
+    const groupData = {
+      Topic: topic,
+      Language: language,
+      NumberOfMembers: parseInt(numberOfMembers), // Convert to integer
+    };
 
     // Dispatch the Redux action
     dispatch(createGroup(groupData));
@@ -43,6 +45,7 @@ const CreateGroup = () => {
     setIsOpen(false);
     setTopic("");
     setLanguage("");
+    setNumberOfMembers("");
   };
 
   return (
@@ -106,6 +109,27 @@ const CreateGroup = () => {
                   className="w-full p-2 mb-4 border border-gray-300 rounded bg-white text-black"
                   required
                 />
+                <div className="mb-4">
+                  <label htmlFor="numberOfMembers" className="block text-sm font-medium mb-1">
+                    Number of Members
+                  </label>
+                  <select
+                    id="numberOfMembers"
+                    value={numberOfMembers}
+                    onChange={(e) => setNumberOfMembers(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded bg-white text-black"
+                    required
+                  >
+                    <option value="" disabled>
+                      Select number of members
+                    </option>
+                    {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                      <option key={num} value={num}>
+                        {num}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div className="flex space-x-4">
                   <button
                     type="submit"

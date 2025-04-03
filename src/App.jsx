@@ -9,6 +9,7 @@ import './App.css';
 // import ConnectedUsers from './AfterJoinGrp/connectedUsers';
 import DrawingBoard from './AfterJoinGrp/DrawingCollab';
 import ScreenShare from './AfterJoinGrp/ScreenShare';
+import CodeSender from './AfterJoinGrp/codeSender';
 
 function App() {
   return (
@@ -20,8 +21,7 @@ function App() {
           <Route path="/home" element={<ChatRoom />} />
           <Route path="/form" element={<TabAnimation />} />
           <Route path="/drawing" element={<DrawingBoard />} />
-
-          <Route path="/screenShare" element={<ScreenShare />} />
+          <Route path="/codesender" element={<CodeSender />} />
         </Routes>
       </WebRTCProvider>
     </Router>

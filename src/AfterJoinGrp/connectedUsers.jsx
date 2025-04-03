@@ -15,7 +15,6 @@ const ConnectedUsers = ({ localVideoStream, remoteStreams }) => {
     const groupId = useSelector((state) => state.passingGroupId.groupId);
     const userName = profile?.user?.name;
     const userId = profile?.user?._id;
-
     const currentGroup = groupsState?.groups?.find((group) => group._id === groupId);
     const connectedUsers = currentGroup?.connectedUsers || [];
     const filteredUsers = connectedUsers.filter(user => user.userId !== userId);

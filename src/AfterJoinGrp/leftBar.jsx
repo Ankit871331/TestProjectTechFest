@@ -15,6 +15,8 @@ import MoreTools from './MoreTools';
 import videoIcon from "../assets/videoIcon.svg"
 import chatGpt from "./chatGpt"
 import ChatGptBox from './chatGpt';
+import code from "../assets/codeSender.svg"
+import CodeSender from './codeSender';
 
 
 const LeftBar = () => {
@@ -24,11 +26,9 @@ const LeftBar = () => {
   const [isVSCodeIconClicked, setIsVSCodeIconClicked] = useState(false);
   const [isDrawIconClicked, setIsDrawIconClicked] = useState(false);
   const [isToolsIconClicked, setIsToolsIconClicked] = useState(false);
+  const [isCodeSenderClick, setCodeSenderClicked] = useState(false);
   const [isGptClicked, setGptClicked] = useState(false);
-  const owenerId = useSelector((state) => state.passingGroupId.ownerId);
-  const { profile } = useSelector((state) => state.user);
-  const userId = profile?.user?.groupID;
-  console.log("userId", userId)
+
 
   useEffect(() => {
     dispatch(fetchUserProfile());
@@ -47,6 +47,9 @@ const LeftBar = () => {
   };
   const handleGptClick = () => {
     setGptClicked(!isGptClicked);
+  };
+  const handleCodeSender = () => {
+    setCodeSenderClicked(!isCodeSenderClick);
   };
 
 
@@ -117,6 +120,17 @@ const LeftBar = () => {
           {/* this A CHAT GPT ICON END */}
 
           <div
+            className={`icon-container ${isCodeSenderClick ? 'draw-clicked' : ''}`}
+            onClick={handleCodeSender}
+
+            data-tooltip-id="CodeSender"
+            data-tooltip-content="Code Sender"
+          >
+            <img src={code} alt="Draw" className={`icon ${isCodeSenderClick ? 'white-icon' : ''} chatGpt`} />
+          </div>
+          <Tooltip id="CodeSender" place="left" />
+
+          <div
             className={`icon-container ${isToolsIconClicked ? 'tools-clicked' : ''}`}
             onClick={handleToolsIconClick}
             data-tooltip-id="Tools"
@@ -128,9 +142,7 @@ const LeftBar = () => {
 
         </div>
 
-        <div className="more-tools-container">
-          <MoreTools groupId={userId} />
-        </div>
+
 
       </StyledSidebar>
       {/* Conditionally render the ChatBox, CodeEditor, and Drawing */}
@@ -141,11 +153,15 @@ const LeftBar = () => {
           <Drawing />
         </DrawingContainer>
       )}
+
       {isGptClicked && (
-
        <ChatGptBox/>
-
       )}
+
+      {isCodeSenderClick && (
+       <CodeSender/>
+      )}
+
     </>
   );
 };

@@ -4,10 +4,10 @@ import io from 'socket.io-client';
 import styled from "styled-components";
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchUserProfile } from "../Features/counter/getProfile";
-import { setLockState,setGroupId } from "../Features/counter/passingGroupId";
-
+import { setLockState, setGroupId } from "../Features/counter/passingGroupId";
 import { addUserToGroup } from "../Features/counter/connectedUsersSlice";
-import { setFalse, setTrue } from "../Features/counter/toggleConnectUsers"
+import { setFalse, setTrue } from "../Features/counter/toggleConnectUsers";
+
 // Initialize Socket.IO connection
 const socket = io(import.meta.env.VITE_SERVER_BASE_URL, { transports: ["websocket"] });
 
@@ -17,20 +17,19 @@ const getColor = (index) => {
   return colors[index % colors.length];
 };
 
-const Card = ({ uniqueId, name, language, topic, members = [] }) => {
+const Card = ({ uniqueId, name, language, topic, members = [], NumberOfMembers }) => {
+  console.log("members", members);
   const dispatch = useDispatch();
   const [isLocked, setIsLocked] = useState(false);
   const { profile } = useSelector((state) => state.user);
   const isUserJoinedCall = useSelector((state) => state.connectedUsers.isUserJoinedCall);
-
   const [lockedGroups, setLockedGroups] = useState({});
 
   useEffect(() => {
-          if (profile?.user?.groupId) {
-              console.log(profile.user.groupId);
-          }
-      }, [profile]);
-
+    if (profile?.user?.groupId) {
+      console.log(profile.user.groupId);
+    }
+  }, [profile]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -42,42 +41,51 @@ const Card = ({ uniqueId, name, language, topic, members = [] }) => {
   useEffect(() => {
     socket.on("toggleLock", ({ groupId, lockState }) => {
       dispatch(setLockState({ groupId, newLockState: lockState }));
-      console.log("groupId", groupId)
+      console.log("groupId", groupId);
       setLockedGroups((prev) => ({
         ...prev,
         [groupId]: lockState, // Update only the specific group
       }));
     });
 
+    // Listen for user leaving the group
+    socket.on("userLeft", ({ groupId, updatedMembers }) => {
+      if (groupId === uniqueId) {
+        // Update members locally or via Redux if needed
+        console.log("User left, updated members:", updatedMembers);
+        // Assuming members is updated via props or Redux, no direct state change here
+      }
+    });
+
     return () => {
       socket.off("toggleLock");
+      socket.off("userLeft");
     };
-  }, [dispatch]);
-
-
+  }, [dispatch, uniqueId]);
 
   // Handle joining the room and emitting socket events
   const handleJoinClick = () => {
     if (profile && profile.user && profile.user._id && uniqueId) {
+      console.log("NumberOfMembers", NumberOfMembers);
       console.log("groupID", uniqueId);
-      dispatch(setGroupId(uniqueId))
 
+      dispatch(setGroupId(uniqueId));
       dispatch(addUserToGroup({ groupId: uniqueId, userId: profile.user._id }));
 
       socket.emit("joinGroup", { groupId: uniqueId, username: profile.user.name });
       if (!isUserJoinedCall) {
-        dispatch(setTrue("isUserJoinedCall"))
+        dispatch(setTrue("isUserJoinedCall"));
       }
-
     }
   };
-
-
 
   // Display up to 3 members with name and circle, placeholders for empty slots
   const displayedMembers = members.slice(0, 3);
   const remainingCount = 3 - displayedMembers.length;
   const extraMembers = members.length - 3;
+
+  // Check if the group is full
+  const isGroupFull = members.length >= NumberOfMembers;
 
   return (
     <div className="bg-[#2D2F2B] text-white rounded-lg shadow-md p-6 w-full max-w-sm">
@@ -127,24 +135,21 @@ const Card = ({ uniqueId, name, language, topic, members = [] }) => {
       </div>
 
       {/* Join Group Button */}
-
-      {(
-        <div className="flex justify-center">
-          <Link to="home" className="w-full">
-            <button
-              className={`px-4 py-2 rounded-lg w-full transition-transform duration-200
-          ${lockedGroups[uniqueId]
-                  ? "bg-gray-400 cursor-not-allowed" // Disabled state (gray color)
-                  : "bg-[#00BFFF] hover:scale-105 text-white"}`
-              }
-              onClick={lockedGroups[uniqueId] ? null : handleJoinClick}
-              disabled={lockedGroups[uniqueId]}
-            >
-              Join
-            </button>
-          </Link>
-        </div>
-      )}
+      <div className="flex justify-center">
+        <Link to="home" className="w-full">
+          <button
+            className={`px-4 py-2 rounded-lg w-full transition-transform duration-200
+              ${(lockedGroups[uniqueId] || isGroupFull)
+                ? "bg-gray-400 cursor-not-allowed" // Disabled state (gray color, no cursor)
+                : "bg-[#00BFFF] hover:scale-105 text-white"}`
+            }
+            onClick={(lockedGroups[uniqueId] || isGroupFull) ? null : handleJoinClick}
+            disabled={lockedGroups[uniqueId] || isGroupFull}
+          >
+            Join
+          </button>
+        </Link>
+      </div>
     </div>
   );
 };
@@ -161,6 +166,7 @@ const ExtraMembersCircle = styled.div`
   color: white;
   font-weight: bold;
 `;
+
 const MemberContainer = styled.div`
   display: flex;
   align-items: center;
@@ -182,6 +188,7 @@ const MemberContainer = styled.div`
     background: transparent; /* Transparent track */
   }
 `;
+
 const PlaceholderCircle = styled.div`
   width: 4rem;
   height: 4rem;

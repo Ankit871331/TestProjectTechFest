@@ -3,12 +3,15 @@ import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import sendIcon from "../assets/sendicon.png";
 import { fetchChatGptResponse } from "../Features/counter/chatGpt";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 const ChatGptBox = () => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [typingText, setTypingText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [copiedStates, setCopiedStates] = useState({});
   const textareaRef = useRef(null);
 
   const dispatch = useDispatch();
@@ -56,7 +59,10 @@ const ChatGptBox = () => {
   useEffect(() => {
     if (!loading && response && messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
-      if (lastMessage.role === "user" && !messages.some((msg) => msg.content === response && msg.role === "assistant")) {
+      if (
+        lastMessage.role === "user" &&
+        !messages.some((msg) => msg.content === response && msg.role === "assistant")
+      ) {
         setMessages((prev) => [
           ...prev,
           { role: "assistant", content: response, typing: true },
@@ -72,24 +78,91 @@ const ChatGptBox = () => {
       const newMessages = [...messages, { role: "user", content: input }];
       setMessages(newMessages);
       setInput("");
-
-      // Dispatch the async thunk to fetch Grok response
       dispatch(fetchChatGptResponse(input));
     }
+  };
+
+  const copyToClipboard = (text, codeBlockKey) => {
+    navigator.clipboard.writeText(text).then(
+      () => {
+        setCopiedStates((prev) => ({ ...prev, [codeBlockKey]: true }));
+        setTimeout(() => {
+          setCopiedStates((prev) => ({ ...prev, [codeBlockKey]: false }));
+        }, 2000);
+      },
+      (err) => console.error("Failed to copy code:", err)
+    );
+  };
+
+  const renderMessageContent = (msg) => {
+    if (msg.role === "assistant" && msg.typing) {
+      return (
+        <>
+          {typingText}
+          <TypingIndicator />
+        </>
+      );
+    }
+
+    const content = msg.content;
+    const codeBlockRegex = /```(\w+)?\n([\s\S]*?)(```|$)/g;
+    let lastIndex = 0;
+    const elements = [];
+    let match;
+
+    while ((match = codeBlockRegex.exec(content)) !== null) {
+      const startIndex = match.index;
+      if (startIndex > lastIndex) {
+        elements.push(content.slice(lastIndex, startIndex));
+      }
+
+      const language = match[1] || "text";
+      const codeContent = match[2].trim();
+      const codeBlockKey = `${msg.role}-${startIndex}`;
+      const isCopied = copiedStates[codeBlockKey] || false;
+
+      elements.push(
+        <CodeBlock key={codeBlockKey}>
+          <SyntaxHighlighter
+            language={language}
+            style={vscDarkPlus}
+            customStyle={{
+              margin: 0,
+              padding: "10px",
+              borderRadius: "4px",
+              background: "#222",
+            }}
+            showLineNumbers={false}
+          >
+            {codeContent}
+          </SyntaxHighlighter>
+          <CopyButton onClick={() => copyToClipboard(codeContent, codeBlockKey)}>
+            {isCopied ? "Copied" : "Copy"}
+          </CopyButton>
+        </CodeBlock>
+      );
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < content.length) {
+      elements.push(content.slice(lastIndex));
+    }
+
+    return elements.length > 0 ? elements : content;
   };
 
   return (
     <StyledChatBox>
       <ChatContent>
         <div className="chatbox-header">
-          <h2>Grok Chat</h2>
+          <h2>peerBot</h2>
           <button className="close-btn">×</button>
         </div>
         <div className="chatbox-content">
           {messages.map((msg, index) => (
             <div key={index} className={`message ${msg.role}`}>
-              {msg.role === "assistant" && msg.typing ? typingText : msg.content}
-              {msg.role === "assistant" && msg.typing && <TypingIndicator />}
+              {renderMessageContent(msg)}
             </div>
           ))}
           {loading && <div className="message assistant">Thinking...</div>}
@@ -123,6 +196,30 @@ const TypingIndicator = () => (
   <span className="typing-indicator">...</span>
 );
 
+const CodeBlock = styled.div`
+  position: relative;
+  margin: 5px 0;
+  width: 100%;
+`;
+
+const CopyButton = styled.button`
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 2px 8px;
+  background-color: #00bfff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #0099cc;
+  }
+`;
+
 const StyledChatBox = styled.div`
   position: fixed;
   right: 0;
@@ -140,7 +237,6 @@ const ChatContent = styled.div`
   flex-direction: column;
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
   border-radius: 10px;
-  overflow: hidden;
   animation: slideInFromRight 0.3s ease-in-out forwards;
 
   @keyframes slideInFromRight {
@@ -183,16 +279,17 @@ const ChatContent = styled.div`
   .chatbox-content {
     flex: 1;
     padding: 10px;
-    overflow-y: auto;
     display: flex;
     flex-direction: column;
     background-color: #1a1a1a;
+    /* Removed overflow-y: auto to disable scrolling */
   }
 
   .message {
     padding: 8px 12px;
     margin-bottom: 10px;
     border-radius: 8px;
+    flex-direction: column;
     width: fit-content;
     max-width: 80%;
     word-wrap: break-word;
@@ -244,9 +341,9 @@ const ChatContent = styled.div`
     resize: none;
     min-height: 40px;
     max-height: 120px;
-    overflow-y: auto;
     background-color: #444;
     color: white;
+    overflow-y: hidden; /* Disable scrollbar in textarea */
   }
 
   .chat-input::placeholder {
